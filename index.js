@@ -13,8 +13,7 @@ try {
     client.registry
         .registerDefaultTypes()
         .registerGroups([
-            ['link', 'Channel links'],
-            ['msgformat', 'Message formatting']
+            ['ranks', 'Ranking commands']
         ])
         .registerDefaultGroups()
         .registerDefaultCommands()
@@ -22,65 +21,7 @@ try {
 
     client.on('ready', () => {
         console.log('Logged in!');
-        client.user.setActivity('Watching you');
-    });
-
-    // Copie les messages sur les channels linkés
-    client.on('message', msg => {
-        try {
-            // Ne fait rien si on est dans un channel de DM
-            if(!msg.guild) {
-                return;
-            }
-
-            // Ne copie pas si un bot a écrit le message ou si le serveur n'a pas de lien
-            if((msg.content.length === 0 && msg.attachments.size === 0)
-            || msg.author.bot
-            || !links.guilds.hasOwnProperty(msg.guild.id)) {
-                return;
-            }
-
-            const to = links.guilds[msg.guild.id][msg.channel.id];
-
-            // Ne copie pas si le canal n'a pas de lien
-            if(typeof to === 'undefined') {
-                return;
-            }
-
-            // Récupère le format du message
-            const format = formats.hasOwnProperty(msg.guild.id) ? formats[msg.guild.id] : '\\m';
-
-            // Formattage du message
-            const formattedMsg = format.replace('\\t', new Date().toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' }))
-                                        .replace('\\c', msg.channel)
-                                        .replace('\\u', msg.author.tag)
-                                        .replace('\\m', msg.cleanContent);
-
-            // Copie des messages
-            to.forEach(id => {
-                const channel = client.channels.get(id);
-                if(channel.type === 'text') {
-
-                    // Envoi de message avec pièce jointe
-                    if(msg.attachments.size > 0) {
-                        msg.attachments.forEach((MA) => {
-                            channel.send(formattedMsg, {
-                                files:
-                                    [MA.url]
-                                });
-                        });
-                    }
-
-                    // Envoi de message sans pièce jointe
-                    else {
-                        channel.send(formattedMsg);
-                    }
-                }
-            });
-        }
-        catch(err) {
-            console.log(err);
-        }
+        client.user.setActivity('x!help');
     });
 
     try {
