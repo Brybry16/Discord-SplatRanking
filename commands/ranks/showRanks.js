@@ -70,7 +70,7 @@ module.exports = class ShowRanksCommand extends Command {
             return notThisMonth();
         }
 
-        let classement = '**__Rankings ' + mMonth + '/' + mYear + ':__**';
+        let classement = '**__Rankings ' + mMonth + '/' + mYear + ':__**\n';
 
         const sortFn = function (a, b) {
             if(a === null){
@@ -83,8 +83,18 @@ module.exports = class ShowRanksCommand extends Command {
             return b.power - a.power;
         };
 
+        const printMode = function(mode) {
+            classement += '\n**__' + mode + '__**\n';
+        };
+
         const printFn = function (entry, i) {
-            classement += (i+1) + '. ' + entry.tag + ': ' + entry.power + '\n';
+            
+            if(i === 3) {
+                classement += '\n';
+            }
+            classement += i < 3 ? '**' + (i+1) + '.** ' : (i+1) + '. ';
+
+            classement += entry.power + ' - ' + entry.tag + '\n';
         };
 
         if(mode.toLowerCase() !== 'all') {
@@ -95,7 +105,7 @@ module.exports = class ShowRanksCommand extends Command {
                 return msg.channel.send('Aucun Power n\'a été saisi dans le mode ' + mode.toUpperCase() + ' pour le mois demandé.');
             }
 
-            classement += '\n**' + mode.toUpperCase() + '**\n';
+            printMode(mode.toUpperCase());
 
             rankings[month][guildId][mode.toLowerCase()].sort(sortFn).forEach(printFn);
         }
@@ -106,7 +116,7 @@ module.exports = class ShowRanksCommand extends Command {
                     return;
                 }
 
-                classement += '\n**' + m.toUpperCase() + '**\n';
+                printMode(m.toUpperCase());
 
                 rankings[month][guildId][m].sort(sortFn).forEach(printFn);
 
