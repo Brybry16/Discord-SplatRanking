@@ -92,19 +92,19 @@ module.exports = class ResetRanksCommand extends Command {
             }
 
             if(!rankings[season][guildId][mode.toLowerCase()].some(deleteFn)) {
-                return msg.channel.send('Le membre ' + user.tag + 'n\'a pas de power enregistré ce mois-ci pour le mode ' + mode.toUpperCase());
+                return msg.channel.send('Le membre **' + user.tag + '** n\'a pas de power enregistré ce mois-ci pour le mode ' + mode.toUpperCase());
             }
         }
         else {
             Object.keys(rankings[season][guildId]).forEach(m => {
                 if(!rankings[season][guildId][m.toLowerCase()].some(deleteFn)) {
-                    return msg.channel.send('Le membre ' + user.tag + 'n\'a pas de power enregistré ce mois-ci pour le mode ' + mode.toUpperCase());
+                    return msg.channel.send('Le membre **' + user.tag + '** n\'a pas de power enregistré ce mois-ci pour le mode ' + m.toUpperCase());
                 }
             });
         }
 
         // Updating JSON file
-        fs.writeFile('./settings/ranks.json', JSON.stringify(guildsList, null, 4), function(err) {
+        fs.writeFile('./settings/ranks.json', JSON.stringify(rankings, null, 4), function(err) {
             if(err) {
                 return console.log(err);
             }

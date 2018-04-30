@@ -117,8 +117,6 @@ module.exports = class UpdateRankCommand extends Command {
             if(err) {
                 return console.log(err);
             }
-
-            return console.log('Power updated');
         });
 
         return msg.channel.send('Power mis à jour.');
