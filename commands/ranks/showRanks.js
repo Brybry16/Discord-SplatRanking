@@ -1,5 +1,6 @@
 const { Command } = require('discord.js-commando');
-const { rankings } = require('../../settings/ranks.json');
+const fileName = '../../settings/ranks.json';
+const rankings = require(fileName);
 const modes = ['SZ', 'TC', 'RM', 'CB', 'ALL']
 
 module.exports = class ShowRanksCommand extends Command {
@@ -31,30 +32,32 @@ module.exports = class ShowRanksCommand extends Command {
     run(msg, {mode, month}) {
 
         if(modes.indexOf(mode.toUpperCase()) == -1) {
-            return msg.say('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
+            return msg.channel.send('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
         }
+
+        const date = new Date();
 
         if(!month) {
-            const date = new Date();
-            month = date.getFullYear().toString() + ('0' + date.getMonth().toString()).slice(-2);
+            month = date.getFullYear().toString() + ('0' + (date.getMonth() + 1).toString()).slice(-2);
         }
+
         if(month.length !== 6) {
-            return msg.say('Format du mois saisi incorrect, veuillez saisir le mois sous le format \'yyyymm\'.');
+            return msg.channel.send('Format du mois saisi incorrect, veuillez saisir le mois sous le format \'yyyymm\'.');
         }
 
-        const mYear = month.substr(0,4).parseInt();
-        const mMonth = month.substr(4,2).parseInt();
+        const mYear = parseInt(month.substr(0,4));
+        const mMonth = parseInt(month.substr(4,2));
 
-        if(mYear.isNaN() || mMonth.isNaN()) {
-            return msg.say('Format du mois saisi incorrect, veuillez saisir le mois sous le format \'yyyymm\'.');
+        if(isNaN(mYear) || isNaN(mMonth)) {
+            return msg.channel.send('Format du mois saisi incorrect, veuillez saisir le mois sous le format \'yyyymm\'.');
         }
 
         if(mYear < 2018 || mYear > date.getFullYear() || mMonth < 1 || mMonth > 12) {
-            return msg.say('Mois saisi incorrect. Veuillez saisir une année entre 2018 et l\'année actuelle ainsi qu\'un mois entre 1 et 12');
+            return msg.channel.send('Mois saisi incorrect. Veuillez saisir une année entre 2018 et l\'année actuelle ainsi qu\'un mois entre 1 et 12');
         }
         
         const notThisMonth = function() {
-            return msg.say('Aucun Power n\'a été saisi pour ce mois');
+            return msg.channel.send('Aucun Power n\'a été saisi pour ce mois');
         }
 
         if(!rankings.hasOwnProperty(month)) {
@@ -69,39 +72,52 @@ module.exports = class ShowRanksCommand extends Command {
 
         let classement = '**__Rankings ' + mMonth + '/' + mYear + ':__**';
 
-        if(mode.toLowerCase() !== 'all') {
-            if(!rankings[month][guildId].hasOwnProperty(mode.toLowerCase())) {
-                return msg.say('Aucun Power n\'a été saisi ce mois-ci pour le mode ' + mode.toUpperCase());
+        const sortFn = function (a, b) {
+            if(a === null){
+                return 1;
+            }
+            else if(b === null){
+                return -1;
             }
 
-            classement += '\n**Mode: ' + mode.toUpperCase() + '**\n';
+            return b.power - a.power;
+        };
 
-            rankings[month][guildId][mode.toLowerCase()].sort(function (a, b) {
-                return b-a;
-            }).forEach((a, b) => {
-                client.fetchUser(a).then(u => {
-                    classement += u.tag + ' - ' + b + '\n';
-                }, err => {
-                    console.log(err);
-                })
-            });
+        const printFn = function (entry, i) {
+            classement += (i+1) + '. ' + entry.tag + ': ' + entry.power + '\n';
+        };
+
+        if(mode.toLowerCase() !== 'all') {
+            if(!rankings[month][guildId].hasOwnProperty(mode.toLowerCase())) {
+                return msg.channel.send('Aucun Power n\'a été saisi dans le mode ' + mode.toUpperCase() + ' pour le mois demandé.');
+            }
+            if(rankings[month][guildId][mode.toLowerCase()].length === 0) {
+                return msg.channel.send('Aucun Power n\'a été saisi dans le mode ' + mode.toUpperCase() + ' pour le mois demandé.');
+            }
+
+            classement += '\n**' + mode.toUpperCase() + '**\n';
+
+            rankings[month][guildId][mode.toLowerCase()].sort(sortFn).forEach(printFn);
         }
         else {
+            let nbRankings = 0;
             Object.keys(rankings[month][guildId]).forEach(m => {
-                classement += '\n**Mode: ' + m.toUpperCase() + '**\n';
+                if(rankings[month][guildId][m].length === 0) {
+                    return;
+                }
 
-                rankings[month][guildId][m].sort(function (a, b) {
-                    return b-a;
-                }).forEach((a, b) => {
-                    client.fetchUser(a).then(u => {
-                        classement += u.tag + ' - ' + b + '\n';
-                    }, err => {
-                        console.log(err);
-                    })
-                });
+                classement += '\n**' + m.toUpperCase() + '**\n';
+
+                rankings[month][guildId][m].sort(sortFn).forEach(printFn);
+
+                nbRankings++;
             });
+
+            if(nbRankings === 0) {
+                return msg.channel.send('Aucun Power n\'a été saisi pour le mois demandé.');
+            }
         }
 
-        return msg.say(classement);
+        return msg.channel.send(classement);
     }
 };

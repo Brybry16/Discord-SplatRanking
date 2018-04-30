@@ -11,7 +11,7 @@ module.exports = class UpdateRankCommand extends Command {
             memberName: 'rank',
             group: 'ranks',
             description: 'Updates the rank of a member',
-            examples: ['rank cb 2740.2', 'rank cb @Brybry#0001 2740.2'],
+            examples: ['rank cb 2740.2', 'rank rm 2740.2 @Brybry#0001', 'rank sz delete', 'rank tc delete @Brybry#0001'],
             guildOnly: true,
             args: [
                 {
@@ -20,65 +20,107 @@ module.exports = class UpdateRankCommand extends Command {
                     type: 'string'
                 },
                 {
+                    key: 'power',
+                    prompt: 'Your power in this mode; use delete if you want to remove your power',
+                    type: 'string'
+                },
+                {
                     key: 'user',
                     prompt: 'The user you want tu update the score',
                     type: 'user',
                     default: ''
-                },
-                {
-                    key: 'power',
-                    prompt: 'Your power in this mode',
-                    type: 'string'
                 }
             ]
         });
     }
 
-    run(msg, { mode, user, power }) {
+    run(msg, { mode, power, user }) {
+
+        const deletePower = 'delete';
 
         // Vérification des valeurs saisies
         if(modes.indexOf(mode.toUpperCase()) == -1) {
-            return msg.say('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
+            return msg.channel.send('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
         }
-        if(isNaN(power.parseFloat())) {
-            return msg.say('Power invalide. Veuillez saisir une valeur numérique à 4 chiffres (et un chiffre après la virgule)');
+        if(isNaN(parseFloat(power)) && power !== deletePower) {
+            return msg.channel.send('Power invalide. Veuillez saisir une valeur numérique à 4 chiffres (et un chiffre après la virgule)');
         }
-        if(power.parseFloat() < 1500 || power.parseFloat() > 5000) {
-            return msg.say('Power invalide. Veuillez saisir une valeur supérieure à 1500 et inférieure à 5000');
-        }
-
-        if(!user) {
-            user = msg.user;
+        if(power !== deletePower && (parseFloat(power) < 1500 || parseFloat(power) > 5000)) {
+            return msg.channel.send('Power invalide. Veuillez saisir une valeur supérieure à 1500 et inférieure à 5000');
         }
 
-        if(user.id != msg.user.id && !msg.member.permissions.has('ADMINISTRATOR') && !this.client.isOwner(msg.author)) {
-            return msg.say('Erreur: Vous n\'avez pas les permissions nécessaires pour modifier le power d\'un autre utilisateur.');
+
+
+        const userId = !user ? msg.author.id : user.id;
+
+        if(userId != msg.author.id && !msg.member.permissions.has('ADMINISTRATOR') && !this.client.isOwner(msg.author)) {
+            return msg.channel.send('Erreur: Vous n\'avez pas les permissions nécessaires pour modifier le power d\'un autre utilisateur.');
         }
 
         const date = new Date();
-        const month = date.getFullYear().toString() + ('0' + date.getMonth().toString()).slice(-2);
+        const month = date.getFullYear().toString() + ('0' + (date.getMonth() + 1).toString()).slice(-2);
 
         if(!rankings.hasOwnProperty(month)) {
             rankings[month] = {};
         }
 
-        if(!rankings[month].hasOwnProperty(msg.guild.id)) {
-            rankings[month][msg.guild.id] = {};
-            rankings[month][msg.guild.id]['sz'] = {};
-            rankings[month][msg.guild.id]['tc'] = {};
-            rankings[month][msg.guild.id]['rm'] = {};
-            rankings[month][msg.guild.id]['cb'] = {};
+        const guildId = msg.guild.id;
+
+        if(!rankings[month].hasOwnProperty(guildId)) {
+            rankings[month][guildId] = {};
+            rankings[month][guildId]['sz'] = [];
+            rankings[month][guildId]['tc'] = [];
+            rankings[month][guildId]['rm'] = [];
+            rankings[month][guildId]['cb'] = [];
         }
 
-        rankings[month][msg.guild.id][mode.toLowerCase()][user.id] = power.parseFloat();
+        const tag = !user ? msg.author.tag : user.tag;
+
+        const updateFn = function (obj, i, a) {
+            if(obj.user === userId) {
+
+                if(power === deletePower) {
+                    a.splice(i, 1);
+                    let deleteNode = true;
+
+                    Object.keys(rankings[month][guildId]).forEach(m => {
+                        if(deleteNode && rankings[month][guildId][m].length > 0) {
+                            deleteNode = false;
+                        }
+                    });
+
+                    if(deleteNode) {
+                        delete rankings[month][guildId];
+                    }
+                }
+                else {
+                    obj.power = parseFloat(power);
+                    obj.userTag = tag;
+                }
+
+                return true;
+            }
+
+            return false;
+        };
+
+        if(!rankings[month][guildId][mode.toLowerCase()].some(updateFn)) {
+            if(power === deletePower) {
+                return msg.channel.send('Erreur: Vous ne pouvez pas supprimer un Power inexistant.');
+            }
+
+            rankings[month][guildId][mode.toLowerCase()].push({'user': userId, 'tag': tag, 'power': parseFloat(power)});
+        }
 
         // Updating JSON file
         fs.writeFile('./settings/ranks.json', JSON.stringify(rankings, null, 4), function(err) {
             if(err) {
                 return console.log(err);
             }
+
+            return console.log('Power updated');
         });
 
-        return msg.say('Power mis à jour.');
+        return msg.channel.send('Power mis à jour.');
     }
 };
