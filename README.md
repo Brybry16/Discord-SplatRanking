@@ -1,16 +1,16 @@
 
-# Miradar - Un Bot Discord pour lier des canaux  
-Miradar est un bot développé en Discord.js dont le but est de relier plusieurs canaux textuels entre eux.  
+# SplatRanking - Un Bot Discord pour enregistrer les Rankings Splatoon 2 dans chaque mode de jeu du Rang X 
+SplatRanking est un bot développé en Discord.js dont le but est d'enregistrer les 'Powers' des membres du serveur dans chacun des modes de jeu classés de Splatoon 2.  
   
-Vous pouvez définir votre propre liste d'entrées et sorties, et à chaque fois qu'un message est envoyé sur un des canaux d'entrée, il sera retransmis sur tous les canaux de sortie qui lui ont été assignés.  
+Les utilisateurs doivent entrer manuellement leur power et le bot peut ensuite générer des classements mensuels par serveur et par mode de jeu. 
   
 ## Installation  
-Pour utiliser Miradar, vous aurez besoin de :  
+Pour utiliser SplatRanking, vous aurez besoin de :  
   
 - Node.JS v8.0.0 ou supérieure ([**instructions d'installation**](https://nodejs.org/fr/download/package-manager/))  
 - Une connexion internet  
   
-Après avoir installé Node.JS, lancez un terminal à la racine du dossier de Miradar et utilisez la commande suivante:
+Après avoir installé Node.JS, lancez un terminal à la racine du dossier de SplatRanking et utilisez la commande suivante:
 
     npm i
    
@@ -25,7 +25,7 @@ Ces dépendances sont nécessaires au bon fonctionnement du bot.
 
 Une fois les dépendances installées, remplissez le fichier **config.json** qui se trouve dans le dossier **settings**:  
   
-- **Prefix:** Le préfixe des commandes du bot (_défaut: mi!_)  
+- **Prefix:** Le préfixe des commandes du bot (_défaut: x!_)  
 - **Token:** Le jeton d'utilisateur de votre bot. Vous pouvez y accéder en cliquant sur votre application (ou en en créant une) via la page '**[Mes applications](https://discordapp.com/developers/applications/me)**' sur le portail Discord  
 - **Owner:** Votre propre identifiant Discord à 18 caractères numériques. La manière la plus simple pour obtenir cette valeur est d'activer les fonctionnalités de développeur dans Discord, puis faire un clic droit sur votre pseudo > Copier l'identifiant.  
   
@@ -53,133 +53,104 @@ Vous pourrez alors sélectionner un serveur parmi ceux sur lesquels vous dispose
 
 # Commandes
 
-Miradar dispose d'un total de 5 commandes permettant la gestion des liens entre les canaux ainsi que le formatage des messages qu'il retransmet.
+SplatRanking dispose d'un total de 3 commandes permettant la gestion des classements et du Power des membres.
 
-## Gestion des liens
+## Gestion des rangs
 
-Ce groupe de commandes permet comme son nom l'indique de gérer les liens du serveur Discord. Il est composé de 4 commandes.
+Ce groupe de commandes permet comme son nom l'indique de gérer les rangs (power) des membres du serveur Discord. Il est composé de 3 commandes.
 
-### createlink
+### rank
 
-**Aliases:** cl, create
-
-**Description:** Crée un lien entre deux canaux d'un même serveur.
+**Description:** Modifie le rang d'un membre pour la saison actuelle
 
 **Utilisable en MP:** Non
 
-**Permissions requises:** Gérer le serveur
+**Permissions requises:** Aucune
 
 **Arguments:**
 
-- From: Canal à partir duquel copier les messages. _Obligatoire_
-- To: Canal sur lequel copier les messages. _Obligatoire_
+- Mode: Le mode dans lequel l'utilisateur souhaite modifier son Power. 4 valeurs possibles : `SZ`, `TC`, `RM` ou `CB`. (_Obligatoire_)
+- Power: Le Power de l'utilisateur. Écrire `delete` pour supprimer le Power (p. ex. en cas de dérank). `Valeurs numériques` ou mot `delete` uniquement. (_Obligatoire_)
+- User: L'utilisateur dont on veut mettre à jour le Power. (_Facultatif, administrateurs uniquement_)
 
 **Exemples:**
 
-- Créer un lien en passant des canaux textuels
+- Modifier son Power dans le mode Clam Blitz (Pluie de Palourdes)
 
-	> mi!createlink #from #to
+	> x!rank cb 2740.2
         
-- Créer un lien en passant le nom des canaux textuels
+- Modifier le Power d'un utilisateur dans le mode Rainmaker (Mission Bazookarpe)
 
-	> mi!createlink from to
+	> x!rank rm 2740.2 @Brybry#0001
 
-### deletelink
+- Supprimer son Power dans le mode Splat Zone (Défense de Zone)
 
-**Aliases:** removelink, dl, rl
-
-**Description:** Supprime un lien existant entre deux canaux.
-
-**Utilisable en MP:** Non
-
-**Permissions requises:** Gérer le serveur
-
-**Arguments:**
-
-- From: Canal à partir duquel les messages sont copiés. _Obligatoire_
-- To: Canal sur lequel les messages sont copiés. _Obligatoire_
-
-**Exemples:**
-
-- Supprimer un lien en passant des canaux textuels
-
-	> mi!deletelink #from #to
+	> x!rank sz delete
         
-- Supprimer un lien en passant le nom des canaux textuels
+- Supprimer le Power d'un utilisateur dans le mode Tower Control (Expédition Risquée)
 
-	> mi!deletelink from to
+	> x!rank tc delete @Brybry#0001
 
-### resetlinks
+### reset
 
-**Alias:** reset
-
-**Description:** Supprime tous les liens existant sur le serveur.
+**Description:** Supprime le rang d'un membre sur un ou plusieurs modes pour la saison actuelle.
 
 **Utilisable en MP:** Non
 
-**Permissions requises:** Gérer le serveur
+**Permissions requises:** Aucune
 
-**Arguments:** Aucun
+**Arguments:** 
+
+- Mode: Le mode dans lequel l'utilisateur souhaite modifier son Power. 5 valeurs possibles : `SZ`, `TC`, `RM`, `CB` ou `ALL`. (_Facultatif, défaut: `ALL`_)
+- User: L'utilisateur dont on veut supprimer le Power. (_Facultatif, administrateurs uniquement_)
 
 **Exemples:**
 
-- Supprimer tous les liens d'un serveur
+- Supprimer son Power en Clam Blitz (Pluie de Palourdes)
 
-	> mi!resetlinks
+	> x!reset cb
 
-### showlinks
+- Supprimer le Power d'un membre en Splat Zone (Défense de Zone)
 
-**Aliases:** show, sl
+	> x!reset sz @Brybry#0001
 
-**Description:** Liste tous les liens existant sur le serveur.
+- Supprimer son Power dans tous les modes de jeu
 
-**Utilisable en MP:** Non
+	> x!reset
+	
+	> x!reset all
 
-**Permissions requises:** Gérer le serveur
+- Supprimer le Power d'un membre dans tous les modes de jeu
 
-**Arguments:** Aucun
+	> x!reset all @Brybry#0001
 
-**Exemples:**
+### ranking
 
-- Lister tous les liens d'un serveur
-
-	> mi!showlinks
-
-## Format des messages
-
-Ce groupe de commandes permet de gérer le format dans lequel les messages sont copiés sur les canaux de sortie. Il comporte 1 commande.
-
-### format
-
-**Alias:** form
-
-**Description:** Définit le format dans lequel les messages seront copiés sur les canaux de sortie. Les modificateurs de format sont:
-
-- \u: Tag Discord de l'utilisateur ayant envoyé le message
-- \t: Heure du message au format HH:MM
-- \c: Canal Discord sur lequel le message copié a été envoyé
-- \m: Le message copié (_se situe à la fin par défaut_)
+**Description:** Établit le classement du serveur pour la saison en cours ou une saison définie dans un ou plusieurs modes de jeu.
 
 **Utilisable en MP:** Non
 
-**Permissions requises:** Gérer le serveur
+**Permissions requises:** Aucune
 
 **Arguments:**
 
-- formatString: Chaîne de caractère décrivant le format dans lequel les messages doivent être copiés.
+- Mode: Le mode dans lequel l'utilisateur souhaite afficher le ranking. 5 valeurs possibles : `SZ`, `TC`, `RM`, `CB` ou `ALL`. (_Facultatif, défaut: `ALL`_)
+- Season: La saison dont l'utilisateur souhaite afficher le ranking. Format: `YYYYMM` (ex: 201805 pour mai 2018). (_Facultatif, défaut: Saison en cours_)
 
 **Exemples:**
 
-- Format "IRC"
+- Lister le ranking de la saison en cours dans tous les modes de jeu
 
-	> mi!format [\t] \c <\*\*\u\*\*> 
-	> 
-	> **Sortie:**
-	> [16:00] #channel <**Brybry#0001**> Hello world
+	> x!ranking
 
-- Format "Envoyé par ... à ... sur ..."
+- Lister le ranking de la saison en cours dans le mode Clam Blitz (Pluie de Palourdes)
 
-	> mi!format \*\*\_Message:\_\*\* \m --- Envoyé par \u à \t sur \c
-	> 
-	> **Sortie:**
-	> **_Message:_** Hello world --- Envoyé par Brybry#0001 à 16:00 sur #channel
+	> x!ranking cb
+
+- Lister le ranking de la saison de mai 2018 (05/2018) dans le mode Tower Control (Expédition Risquée)
+
+	> x!ranking tc 201805
+
+- Lister le ranking de la saison de juin 2018 (06/2018) dans tous les modes de jeu
+
+	> x!ranking all 201806
