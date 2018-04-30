@@ -11,7 +11,7 @@ module.exports = class ResetRanksCommand extends Command {
             memberName: 'reset',
             group: 'ranks',
             description: 'Delete the rank of a user in a specific mode',
-            examples: ['reset cb @Brybry#0001', 'reset sz'],
+            examples: ['reset cb @Brybry#0001', 'reset sz', 'reset'],
             guildOnly: true,
             args: [
                 {
@@ -66,20 +66,39 @@ module.exports = class ResetRanksCommand extends Command {
             return notThisMonth();
         }
 
+        const deleteFn = function (obj, i, a) {
+            if(obj.user === userId) {
+                a.splice(i, 1);
+                let deleteNode = true;
+
+                Object.keys(rankings[month][guildId]).forEach(m => {
+                    if(deleteNode && rankings[month][guildId][m].length > 0) {
+                        deleteNode = false;
+                    }
+                });
+
+                if(deleteNode) {
+                    delete rankings[month][guildId];
+                }
+                return true;
+            }
+
+            return false;
+        };
+
         if(mode.toLowerCase() !== 'all') {
             if(!rankings[month][guildId].hasOwnProperty(mode.toLowerCase())) {
                 return msg.channel.send('Aucun Power n\'a été saisi ce mois-ci pour le mode ' + mode.toUpperCase());
             }
-            if(!rankings[month][guildId][mode.toLowerCase()].hasOwnProperty(userId)) {
+
+            if(!rankings[month][guildId][mode.toLowerCase()].some(deleteFn)) {
                 return msg.channel.send('Le membre ' + user.tag + 'n\'a pas de power enregistré ce mois-ci pour le mode ' + mode.toUpperCase());
             }
-
-            delete rankings[month][guildId][mode.toLowerCase()][userId];
         }
         else {
             Object.keys(rankings[month][guildId]).forEach(m => {
-                if(rankings[month][guildId][m].hasOwnProperty(userId)) {
-                    delete rankings[month][guildId][m][userId];
+                if(!rankings[month][guildId][m.toLowerCase()].some(deleteFn)) {
+                    return msg.channel.send('Le membre ' + user.tag + 'n\'a pas de power enregistré ce mois-ci pour le mode ' + mode.toUpperCase());
                 }
             });
         }

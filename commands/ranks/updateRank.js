@@ -42,10 +42,10 @@ module.exports = class UpdateRankCommand extends Command {
         if(modes.indexOf(mode.toUpperCase()) == -1) {
             return msg.channel.send('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
         }
-        if(isNaN(parseFloat(power)) && power !== deletePower) {
+        if(isNaN(parseFloat(power)) && power.toLowerCase() !== deletePower) {
             return msg.channel.send('Power invalide. Veuillez saisir une valeur numérique à 4 chiffres (et un chiffre après la virgule)');
         }
-        if(power !== deletePower && (parseFloat(power) < 1500 || parseFloat(power) > 5000)) {
+        if(power.toLowerCase() !== deletePower && (parseFloat(power) < 1500 || parseFloat(power) > 5000)) {
             return msg.channel.send('Power invalide. Veuillez saisir une valeur supérieure à 1500 et inférieure à 5000');
         }
 
@@ -79,7 +79,7 @@ module.exports = class UpdateRankCommand extends Command {
         const updateFn = function (obj, i, a) {
             if(obj.user === userId) {
 
-                if(power === deletePower) {
+                if(power.toLowerCase() === deletePower) {
                     a.splice(i, 1);
                     let deleteNode = true;
 
@@ -105,7 +105,7 @@ module.exports = class UpdateRankCommand extends Command {
         };
 
         if(!rankings[month][guildId][mode.toLowerCase()].some(updateFn)) {
-            if(power === deletePower) {
+            if(power.toLowerCase() === deletePower) {
                 return msg.channel.send('Erreur: Vous ne pouvez pas supprimer un Power inexistant.');
             }
 
