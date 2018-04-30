@@ -53,7 +53,7 @@ module.exports = class ResetRanksCommand extends Command {
         const season = date.getFullYear().toString() + ('0' + (date.getMonth() + 1).toString()).slice(-2);
 
         const notThisMonth = function() {
-            return msg.channel.send('Aucun Power n\'a été saisi pour ce mois');
+            return msg.channel.send('Aucun Power n\'a été saisi pour cette saison');
         }
 
         if(!rankings.hasOwnProperty(season)) {
@@ -88,17 +88,17 @@ module.exports = class ResetRanksCommand extends Command {
 
         if(mode.toLowerCase() !== 'all') {
             if(!rankings[season][guildId].hasOwnProperty(mode.toLowerCase())) {
-                return msg.channel.send('Aucun Power n\'a été saisi ce mois-ci pour le mode ' + mode.toUpperCase());
+                return msg.channel.send('Aucun Power n\'a été saisi cette saison dans le mode ' + mode.toUpperCase());
             }
 
             if(!rankings[season][guildId][mode.toLowerCase()].some(deleteFn)) {
-                return msg.channel.send('Le membre **' + user.tag + '** n\'a pas de power enregistré ce mois-ci pour le mode ' + mode.toUpperCase());
+                return msg.channel.send('Le membre **' + user.tag + '** n\'a pas de power enregistré cette saison dans le mode ' + mode.toUpperCase());
             }
         }
         else {
             Object.keys(rankings[season][guildId]).forEach(m => {
                 if(!rankings[season][guildId][m.toLowerCase()].some(deleteFn)) {
-                    return msg.channel.send('Le membre **' + user.tag + '** n\'a pas de power enregistré ce mois-ci pour le mode ' + m.toUpperCase());
+                    return msg.channel.send('Le membre **' + user.tag + '** n\'a pas de power enregistré cette saison dans le mode ' + m.toUpperCase());
                 }
             });
         }
