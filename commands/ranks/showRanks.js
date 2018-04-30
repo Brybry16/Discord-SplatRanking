@@ -10,7 +10,7 @@ module.exports = class ShowRanksCommand extends Command {
             memberName: 'ranking',
             group: 'ranks',
             description: 'Show the ranking',
-            examples: ['ranking cb', 'ranking tc 201805'],
+            examples: ['ranking', 'ranking cb', 'ranking tc 201805'],
             guildOnly: true,
             args: [
                 {

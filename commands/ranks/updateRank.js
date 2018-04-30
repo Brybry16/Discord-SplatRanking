@@ -58,20 +58,20 @@ module.exports = class UpdateRankCommand extends Command {
         }
 
         const date = new Date();
-        const month = date.getFullYear().toString() + ('0' + (date.getMonth() + 1).toString()).slice(-2);
+        const season = date.getFullYear().toString() + ('0' + (date.getMonth() + 1).toString()).slice(-2);
 
-        if(!rankings.hasOwnProperty(month)) {
-            rankings[month] = {};
+        if(!rankings.hasOwnProperty(season)) {
+            rankings[season] = {};
         }
 
         const guildId = msg.guild.id;
 
-        if(!rankings[month].hasOwnProperty(guildId)) {
-            rankings[month][guildId] = {};
-            rankings[month][guildId]['sz'] = [];
-            rankings[month][guildId]['tc'] = [];
-            rankings[month][guildId]['rm'] = [];
-            rankings[month][guildId]['cb'] = [];
+        if(!rankings[season].hasOwnProperty(guildId)) {
+            rankings[season][guildId] = {};
+            rankings[season][guildId]['sz'] = [];
+            rankings[season][guildId]['tc'] = [];
+            rankings[season][guildId]['rm'] = [];
+            rankings[season][guildId]['cb'] = [];
         }
 
         const tag = !user ? msg.author.tag : user.tag;
@@ -83,14 +83,14 @@ module.exports = class UpdateRankCommand extends Command {
                     a.splice(i, 1);
                     let deleteNode = true;
 
-                    Object.keys(rankings[month][guildId]).forEach(m => {
-                        if(deleteNode && rankings[month][guildId][m].length > 0) {
+                    Object.keys(rankings[season][guildId]).forEach(m => {
+                        if(deleteNode && rankings[season][guildId][m].length > 0) {
                             deleteNode = false;
                         }
                     });
 
                     if(deleteNode) {
-                        delete rankings[month][guildId];
+                        delete rankings[season][guildId];
                     }
                 }
                 else {
@@ -104,12 +104,12 @@ module.exports = class UpdateRankCommand extends Command {
             return false;
         };
 
-        if(!rankings[month][guildId][mode.toLowerCase()].some(updateFn)) {
+        if(!rankings[season][guildId][mode.toLowerCase()].some(updateFn)) {
             if(power.toLowerCase() === deletePower) {
                 return msg.channel.send('Erreur: Vous ne pouvez pas supprimer un Power inexistant.');
             }
 
-            rankings[month][guildId][mode.toLowerCase()].push({'user': userId, 'tag': tag, 'power': parseFloat(power)});
+            rankings[season][guildId][mode.toLowerCase()].push({'user': userId, 'tag': tag, 'power': parseFloat(power)});
         }
 
         // Updating JSON file
