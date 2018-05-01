@@ -22,7 +22,7 @@ module.exports = class ShowRanksCommand extends Command {
                 {
                     key: 'season',
                     prompt: 'The season of the ranking',
-                    type: 'integer',
+                    type: 'string',
                     default: ''
                 }
             ]
