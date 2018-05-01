@@ -92,7 +92,8 @@ module.exports = class ShowRanksCommand extends Command {
             if(i === 3) {
                 classement += '\n';
             }
-            classement += i < 3 ? '**' + (i+1) + '.** ' : (i+1) + '. ';
+
+            classement += i < 3 ? String.fromCodePoint('0x1f9' + (47+i)) + ' ' : (i+1) + '. ';
 
             classement += entry.power + ' - ' + entry.tag + '\n';
         };
