@@ -15,15 +15,40 @@ module.exports = class ShowRanksCommand extends Command {
             args: [
                 {
                     key: 'mode',
-                    prompt: 'The mode in which you want to show the ranking',
+                    prompt: 'Entrez le mode dans lequel vous souhaitez afficher le classement (au choix parmis les termes suivants: ' + modes.join(', ').toLowerCase() + ').',
                     type: 'string',
-                    default: 'all'
+                    default: 'all',
+                    validate: mode => {
+                        if(modes.indexOf(mode.toUpperCase()) == -1) {
+                            return 'Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase();
+                        }
+
+                        return true;
+                    }
                 },
                 {
                     key: 'season',
-                    prompt: 'The season of the ranking',
+                    prompt: 'Entrez la saison du classement que vous souhaitez afficher (au format \'yyyymm\').',
                     type: 'string',
-                    default: ''
+                    default: '',
+                    validate: season => {
+                        if(season.length !== 6) {
+                            return 'Format de la saison saisie incorrect, veuillez saisir la saison sous le format \'yyyymm\'.';
+                        }
+
+                        const mYear = parseInt(season.substr(0,4));
+                        const mMonth = parseInt(season.substr(4,2));
+
+                        if(isNaN(mYear) || isNaN(mMonth)) {
+                            return 'Format de la saison saisie incorrect, veuillez saisir la saison sous le format \'yyyymm\'.';
+                        }
+
+                        if(mYear < 2018 || mYear > new Date().getFullYear() || mMonth < 1 || mMonth > 12) {
+                            return 'Saison saisie incorrecte. Veuillez saisir une année entre 2018 et l\'année actuelle ainsi qu\'un mois entre 01 et 12 (format: \'yyyymm\').';
+                        }
+
+                        return true;
+                    }
                 }
             ]
         });
@@ -31,30 +56,16 @@ module.exports = class ShowRanksCommand extends Command {
 
     run(msg, {mode, season}) {
 
-        if(modes.indexOf(mode.toUpperCase()) == -1) {
-            return msg.channel.send('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
-        }
-
-        const date = new Date();
+        console.log(season);
 
         if(!season) {
+            const date = new Date();
             season = date.getFullYear().toString() + ('0' + (date.getMonth() + 1).toString()).slice(-2);
-        }
-
-        if(season.length !== 6) {
-            return msg.channel.send('Format de la saison saisie incorrect, veuillez saisir la saison sous le format \'yyyymm\'.');
         }
 
         const mYear = parseInt(season.substr(0,4));
         const mMonth = parseInt(season.substr(4,2));
 
-        if(isNaN(mYear) || isNaN(mMonth)) {
-            return msg.channel.send('Format de la saison saisie incorrect, veuillez saisir la saison sous le format \'yyyymm\'.');
-        }
-
-        if(mYear < 2018 || mYear > date.getFullYear() || mMonth < 1 || mMonth > 12) {
-            return msg.channel.send('Saison saisie incorrecte. Veuillez saisir une année entre 2018 et l\'année actuelle ainsi qu\'un mois entre 1 et 12');
-        }
         
         const notThisMonth = function() {
             return msg.channel.send('Aucun Power n\'a été saisi pour cette saison');

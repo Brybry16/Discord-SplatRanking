@@ -16,13 +16,20 @@ module.exports = class ResetRanksCommand extends Command {
             args: [
                 {
                     key: 'mode',
-                    prompt: 'The mode in which you want to reset your rank',
+                    prompt: 'Entrez le mode dans lequel vous souhaitez supprimer votre Power.',
                     type: 'string',
-                    default: 'all'
+                    default: 'all',
+                    validate: mode => {
+                        if(modes.indexOf(mode.toUpperCase()) == -1) {
+                            return 'Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase();
+                        }
+
+                        return true;
+                    }
                 },
                 {
                     key: 'user',
-                    prompt: 'From which channel do you want to copy the messages ?',
+                    prompt: '[ADMINISTRATEURS] Entrez l\'utilisateur dont vous souhaitez supprimer le Power.',
                     type: 'user',
                     default: ''
                 }
@@ -33,11 +40,6 @@ module.exports = class ResetRanksCommand extends Command {
     
 
     run(msg, {mode, user}) {
-
-        // Vérification des valeurs saisies
-        if(modes.indexOf(mode.toUpperCase()) == -1) {
-            return msg.channel.send('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
-        }
 
         if(!user) {
             user = msg.author;

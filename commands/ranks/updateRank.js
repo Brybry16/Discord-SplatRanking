@@ -8,6 +8,7 @@ module.exports = class UpdateRankCommand extends Command {
     constructor(client) {
         super(client, {
             name: 'rank',
+            aliases: ['power'],
             memberName: 'rank',
             group: 'ranks',
             description: 'Updates the rank of a member',
@@ -16,17 +17,37 @@ module.exports = class UpdateRankCommand extends Command {
             args: [
                 {
                     key: 'mode',
-                    prompt: 'The mode in which the user wants to update his or her rank',
-                    type: 'string'
+                    prompt: 'Entrez le mode dans lequel vous souhaitez mettre à jour votre Power.',
+                    type: 'string',
+                    validate: mode => {
+                        if(modes.indexOf(mode.toUpperCase()) == -1) {
+                            return 'Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase();
+                        }
+
+                        return true;
+                    }
                 },
                 {
                     key: 'power',
-                    prompt: 'Your power in this mode; use delete if you want to remove your power',
-                    type: 'string'
+                    prompt: 'Entrez votre Power dans ce mode de jeu; entrez \'delete\' si vous souhaitez supprimer votre Power.',
+                    type: 'string',
+                    validate: power => {
+                        
+                        const deletePower = 'delete';
+
+                        if(isNaN(parseFloat(power)) && power.toLowerCase() !== deletePower) {
+                            return 'Power invalide. Veuillez saisir une valeur numérique à 4 chiffres (et un chiffre après la virgule)';
+                        }
+                        if(power.toLowerCase() !== deletePower && (parseFloat(power) < 1500 || parseFloat(power) > 5000)) {
+                            return 'Power invalide. Veuillez saisir une valeur supérieure à 1500 et inférieure à 5000';
+                        }
+
+                        return true;
+                    }
                 },
                 {
                     key: 'user',
-                    prompt: 'The user you want tu update the score',
+                    prompt: '[ADMINISTRATEURS] Entrez l\'utilisateur dont vous souhaitez modifier le Power.',
                     type: 'user',
                     default: ''
                 }
@@ -37,20 +58,6 @@ module.exports = class UpdateRankCommand extends Command {
     run(msg, { mode, power, user }) {
 
         const deletePower = 'delete';
-
-        // Vérification des valeurs saisies
-        if(modes.indexOf(mode.toUpperCase()) == -1) {
-            return msg.channel.send('Mode saisi incorrect. Veuillez utiliser l\'un des termes suivants: ' + modes.join(', ').toLowerCase());
-        }
-        if(isNaN(parseFloat(power)) && power.toLowerCase() !== deletePower) {
-            return msg.channel.send('Power invalide. Veuillez saisir une valeur numérique à 4 chiffres (et un chiffre après la virgule)');
-        }
-        if(power.toLowerCase() !== deletePower && (parseFloat(power) < 1500 || parseFloat(power) > 5000)) {
-            return msg.channel.send('Power invalide. Veuillez saisir une valeur supérieure à 1500 et inférieure à 5000');
-        }
-
-
-
         const userId = !user ? msg.author.id : user.id;
 
         if(userId != msg.author.id && !msg.member.permissions.has('ADMINISTRATOR') && !this.client.isOwner(msg.author)) {
@@ -76,6 +83,8 @@ module.exports = class UpdateRankCommand extends Command {
 
         const tag = !user ? msg.author.tag : user.tag;
 
+        let returnMsg;
+
         const updateFn = function (obj, i, a) {
             if(obj.user === userId) {
 
@@ -92,8 +101,16 @@ module.exports = class UpdateRankCommand extends Command {
                     if(deleteNode) {
                         delete rankings[season][guildId];
                     }
+
+                    returnMsg = 'Power supprimé.'
                 }
                 else {
+                    const powerDiff = parseFloat(power.replace(',', '.')) - parseFloat(obj.power);
+
+                    returnMsg = 'Power mis à jour. Différence: ';
+                    returnMsg += powerDiff > 0 ? '+' + powerDiff : powerDiff;
+                    returnMsg += 'pts';
+
                     obj.power = parseFloat(power);
                     obj.userTag = tag;
                 }
@@ -109,7 +126,8 @@ module.exports = class UpdateRankCommand extends Command {
                 return msg.channel.send('Erreur: Vous ne pouvez pas supprimer un Power inexistant.');
             }
 
-            rankings[season][guildId][mode.toLowerCase()].push({'user': userId, 'tag': tag, 'power': parseFloat(power)});
+            rankings[season][guildId][mode.toLowerCase()].push({'user': userId, 'tag': tag, 'power': parseFloat(power.replace(',', '.'))});
+            returnMsg = 'Power ajouté.';
         }
 
         // Updating JSON file
@@ -119,6 +137,6 @@ module.exports = class UpdateRankCommand extends Command {
             }
         });
 
-        return msg.channel.send('Power mis à jour.');
+        return msg.channel.send(returnMsg);
     }
 };
